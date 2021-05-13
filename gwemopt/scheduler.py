@@ -13,7 +13,7 @@ import ligo.segments as segments
 import gwemopt.utils
 import gwemopt.rankedTilesGenerator
 import gwemopt.coverage
-from gwemopt.segments import angular_distance
+#from gwemopt.segments import angular_distance # W
 from munkres import Munkres, make_cost_matrix
 
 def get_altaz_tiles(ras, decs, observatory, obstime):
@@ -54,9 +54,9 @@ def find_tile(exposureids_tile, exposureids, probs, idxs=None,
             findTile = False
             break
         if (not np.isnan(current_ra)) and (not np.isnan(current_dec)):
-            dist = angular_distance(current_ra, current_dec,
+            dist = gwemopt.segments.angular_distance(current_ra, current_dec,
                                     np.array(exposureids_tile["ras"]),
-                                    np.array(exposureids_tile["decs"]))
+                                    np.array(exposureids_tile["decs"])) # W
             slew_readout = readout/(dist/slew_rate)
             slew_readout[slew_readout>1] = 1.0
             score = np.array(exposureids_tile["probs"]) * slew_readout 
@@ -539,8 +539,8 @@ def computeSlewReadoutTime(config_struct, coverage_struct):
     prev_dec = config_struct["longitude"]
     acc_time = 0
     for dat in coverage_struct['data']:
-        dist = angular_distance(prev_ra, prev_dec,
-                                dat[0], dat[1])
+        dist = gwemopt.segments.angular_distance(prev_ra, prev_dec,
+                                dat[0], dat[1]) # W
         slew_readout_time = np.max([dist/slew_rate, readout])
         acc_time += slew_readout_time
         prev_dec = dat[0]
@@ -686,9 +686,9 @@ def summary(params, map_struct, coverage_struct, catalog_struct=None):
                       
             fid.write('%d %.5f %.5f %.5f %.5f %d %.5f %.5f %s %d\n'%(field_id,ra,dec,observ_time,mag,exposure_time,prob,airmass,filt,program_id))
 
-            dist = angular_distance(data[0], data[1],
+            dist = gwemopt.segments.angular_distance(data[0], data[1],
                                     config_struct["tesselation"][:,1],
-                                    config_struct["tesselation"][:,2])
+                                    config_struct["tesselation"][:,2]) # W
             idx1 = np.argmin(dist)
             idx2 = filts.index(filt)
             fields[idx1,0] = config_struct["tesselation"][idx1,0]
