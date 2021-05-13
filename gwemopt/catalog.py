@@ -7,6 +7,7 @@ import copy
 import h5py
 import numpy as np
 import healpy as hp
+import pandas as pd # W
 
 from scipy.stats import norm
 from scipy.special import gammaincinv
@@ -24,10 +25,12 @@ Vizier.ROW_LIMIT = -1
 
 
 def get_catalog(params, map_struct):
-    if not os.path.isdir(params["catalogDir"]):
-        os.makedirs(params["catalogDir"])
-
-    catalogFile = os.path.join(params["catalogDir"],
+    if params["galaxy_catalog"] == "CLU":  # W
+        catalogFile = params["catalogDir"]
+    else:
+        if not os.path.isdir(params["catalogDir"]):
+            os.makedirs(params["catalogDir"])
+        catalogFile = os.path.join(params["catalogDir"],
                                "%s.hdf5" % params["galaxy_catalog"])
 
     """AB Magnitude zero point."""
@@ -135,36 +138,44 @@ def get_catalog(params, map_struct):
         r = distmpc * 1.0
         mag = magb * 1.0
 
-    elif params["galaxy_catalog"] == "CLU":
+    elif params["galaxy_catalog"] == "CLU": # W
         if not os.path.isfile(catalogFile):
-            raise ValueError("Please add %s." % catalogFile)
+            #cat, = Vizier.get_catalogs('J/ApJ/880/7/table2') # W
+            #path = '/Users/frostig/GIT/sims/winter/galaxy_tiling/clu_galaxies_z_0p05.json'
+            cat = pd.read_json(path)
 
-        cat = Table.read(catalogFile)
-        name = cat['name']
-        ra, dec = cat['ra'], cat['dec']
-        sfr_fuv, mstar = cat['sfr_fuv'], cat['mstar']
-        distmpc, magb = cat['distmpc'], cat['magb']
-        a, b2a, pa = cat['a'], cat['b2a'], cat['pa']
-        btc = cat['btc']
+            #raise ValueError("Please add %s." % catalogFile)
+
+        #cat = Table.read(catalogFile)
+        #name = cat['name']
+        cat = pd.read_json(catalogFile)
+        ra, dec = np.array(cat["ra"]), np.array(cat["dec"])
+        print('ra', ra)
+        #sfr_fuv, mstar = cat['SFR-FUV'], cat['Mass']
+        mstar = np.array(cat["mstar"])
+        distmpc, magb = np.array(cat['lumdist_Mpc']), np.array(cat['magb'])
+        #a, b2a, pa = cat['a'], cat['b2a'], cat['pa']
+        #btc = cat['btc']
 
         idx = np.where(distmpc >= 0)[0]
         ra, dec = ra[idx], dec[idx]
-        sfr_fuv, mstar = sfr_fuv[idx], mstar[idx]
+        #sfr_fuv, mstar = sfr_fuv[idx], mstar[idx]
+        mstar = mstar[idx]
         distmpc, magb = distmpc[idx], magb[idx]
-        a, b2a, pa = a[idx], b2a[idx], pa[idx]
-        btc = btc[idx]
+        #a, b2a, pa = a[idx], b2a[idx], pa[idx]
+        #btc = btc[idx]
 
         idx = np.where(~np.isnan(magb))[0]
         ra, dec = ra[idx], dec[idx]
-        sfr_fuv, mstar = sfr_fuv[idx], mstar[idx]
+        #sfr_fuv, mstar = sfr_fuv[idx], mstar[idx]
+        mstar = mstar[idx]
         distmpc, magb = distmpc[idx], magb[idx]
-        a, b2a, pa = a[idx], b2a[idx], pa[idx]
-        btc = btc[idx]
+        #a, b2a, pa = a[idx], b2a[idx], pa[idx]
+        #btc = btc[idx]
 
         z = -1*np.ones(distmpc.shape)
         r = distmpc * 1.0
         mag = magb * 1.0
-
 
     elif params["galaxy_catalog"] == "mangrove":
         catalogFile = os.path.join(params["catalogDir"],
