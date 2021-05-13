@@ -31,6 +31,12 @@ def get_telescope_segments(params):
 
     return params
 
+# W
+def obs_date(time):
+    return ephem.Date(time)
+    #return ephem.Date(Time(time, format='mjd', scale='utc').iso)
+    
+
 def get_moon_segments(config_struct,segmentlist,observer,fxdbdy,radec):
 
     if "moon_constraint" in config_struct:
@@ -41,6 +47,10 @@ def get_moon_segments(config_struct,segmentlist,observer,fxdbdy,radec):
     moonsegmentlist = segments.segmentlist()
     dt = 1.0/24.0
     tt = np.arange(segmentlist[0][0],segmentlist[-1][1]+dt,dt)
+    conv = - 2400000.5 + 2415020.0 # conversion between MJD (tt) and DJD (what ephem uses)
+    tt_DJD = tt - conv
+    
+    #print('tt', tt)
 
     ra2 = radec.ra.radian
     d2 = radec.dec.radian
@@ -48,7 +58,7 @@ def get_moon_segments(config_struct,segmentlist,observer,fxdbdy,radec):
     # Where is the moon?
     moon = ephem.Moon()
     for ii in range(len(tt)-1):
-        observer.date = ephem.Date(Time(tt[ii], format='mjd', scale='utc').iso)
+        observer.date = obs_date(tt_DJD[ii])
         moon.compute(observer)
         fxdbdy.compute(observer)
 
@@ -83,6 +93,7 @@ def get_moon_segments(config_struct,segmentlist,observer,fxdbdy,radec):
     moonsegmentlistdic["moon"] = moonsegmentlist
     moonsegmentlist = moonsegmentlistdic.intersection(["observations","moon"])
     moonsegmentlist.coalesce()
+    #print('moon segment list', moonsegmentlist)
 
     return moonsegmentlist
 
