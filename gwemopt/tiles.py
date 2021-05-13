@@ -17,7 +17,7 @@ import gwemopt.samplers, gwemopt.segments
 import gwemopt.quadrants
 import gwemopt.moc
 
-from gwemopt.segments import angular_distance
+#from gwemopt.segments import angular_distance # W
 
 def get_rectangle(ras, decs, ra_size, dec_size):
 
@@ -31,8 +31,8 @@ def get_rectangle(ras, decs, ra_size, dec_size):
     while (width < ra_size) or (height < dec_size):
 
         ra_mean, dec_mean = np.mean(ras), np.mean(decs)    
-        dist = angular_distance(ra_mean, dec_mean,
-                                ras, decs)
+        dist = gwemopt.segments.angular_distance(ra_mean, dec_mean,
+                                ras, decs) # W
         idx = np.setdiff1d(np.arange(len(ras)),np.argmax(dist))
         ras, decs = ras[idx], decs[idx]
 
@@ -105,16 +105,16 @@ def galaxy(params, map_struct, catalog_struct):
                     ra_center, dec_center = np.mean(catalog_struct["ra"][idxRem][mask]), np.mean(catalog_struct["dec"][idxRem][mask])
 
             elif config_struct["FOV_type"] == "circle":
-                dist = angular_distance(ra, dec,
+                dist = gwemopt.segments.angular_distance(ra, dec,
                                         catalog_struct["ra"][idxRem],
-                                        catalog_struct["dec"][idxRem])
+                                        catalog_struct["dec"][idxRem]) # W
                 mask = np.where((2 * FoV) >= dist)[0]
                 if len(mask) > 1:
                     ra_center, dec_center = get_rectangle(catalog_struct["ra"][idxRem][mask], catalog_struct["dec"][idxRem][mask], (FoV/np.sqrt(2))/np.cos(np.deg2rad(dec)), FoV/np.sqrt(2))
 
-                    dist = angular_distance(ra_center, dec_center,
+                    dist = gwemopt.segments.angular_distance(ra_center, dec_center,
                                             catalog_struct["ra"][idxRem],
-                                            catalog_struct["dec"][idxRem])
+                                            catalog_struct["dec"][idxRem]) # W
                     mask2 = np.where(FoV >= dist)[0]
                     # did the optimization help?
                     if len(mask2) > 2:
