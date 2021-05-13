@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import cm
 
 from astropy.coordinates import get_sun, get_moon, SkyCoord
-from gwemopt.segments import angular_distance
+#from gwemopt.segments import angular_distance # W
 import gwemopt.coverage
 import gwemopt.utils
 
@@ -416,9 +416,9 @@ def coverage(params, map_struct, coverage_struct, catalog_struct=None,plot_sun_m
             current_ra, current_dec = coverage_ras[ii], coverage_decs[ii]
             current_mjd = coverage_mjds[ii]
 
-            dist = angular_distance(current_ra, current_dec,
+            dist = gwemopt.segments.angular_distance(current_ra, current_dec,
                                     coverage_ras[ii+1:],
-                                    coverage_decs[ii+1:])
+                                    coverage_decs[ii+1:]) # W
             idx = np.where(dist <= 1/3600.0)[0]
             if len(idx) > 0:
                 jj = idx[0]
